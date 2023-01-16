@@ -2,6 +2,7 @@
 
 					TWORZENIE BAZY DANYCH, TABEL, RELACJI, INDEXÓW
 ___________________________________________________________________________________________________________________________*/
+/*---------CREATE DATABASE wypożyczalnia;---------*/
 CREATE TABLE adres
 (
     id           INT         NOT NULL AUTO_INCREMENT,
