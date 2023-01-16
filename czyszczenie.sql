@@ -66,4 +66,4 @@ drop table adres;
 
 
 /*---------CZYSZCZENIE BAZY DANYCH---------*/
-DROP DATABASE wypożyczalnia;
+/*---------DROP DATABASE wypożyczalnia;---------*/
