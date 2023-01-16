@@ -1,0 +1,708 @@
+/*___________________________________________________________________________________________________________________________
+
+					TWORZENIE BAZY DANYCH, TABEL, RELACJI, INDEXÓW
+___________________________________________________________________________________________________________________________*/
+
+CREATE DATABASE wypożyczalnia;
+
+CREATE TABLE adres
+(
+    id           INT         NOT NULL AUTO_INCREMENT,
+    PRIMARY KEY (id),
+    kraj         varchar(50) NOT NULL,
+    ulica        varchar(50) NOT NULL,
+    miasto       varchar(50) NOT NULL,
+    kod_pocztowy varchar(10) NOT NULL
+);
+CREATE TABLE oddział
+(
+    id     INT         NOT NULL AUTO_INCREMENT,
+    PRIMARY KEY (id),
+    kraj   varchar(50) NOT NULL,
+    miasto varchar(50) NOT NULL
+);
+CREATE TABLE pracownik
+(
+    id                INT           NOT NULL AUTO_INCREMENT,
+    PRIMARY KEY (id),
+    imie              VARCHAR(50)   NOT NULL,
+    nazwisko          VARCHAR(50)   NOT NULL,
+    id_oddział        INT           NOT NULL,
+    id_adres          INT           NOT NULL,
+    pesel             long UNIQUE         NOT NULL,
+    nr_tel            long          NOT NULL,
+    data_zatrudnienie DATE          NOT NULL,
+    pensja            DECIMAL(6, 2) NOT NULL
+);
+CREATE TABLE samochód
+(
+    id          INT         NOT NULL AUTO_INCREMENT,
+    PRIMARY KEY (id),
+    id_oddział  INT         NOT NULL,
+    rejestracja VARCHAR(20) NOT NULL,
+    sprawny     BOOLEAN     NOT NULL
+);
+CREATE TABLE model
+(
+    id      INT         NOT NULL AUTO_INCREMENT,
+    PRIMARY KEY (id),
+    marka   varchar(50) NOT NULL,
+    model   varchar(50) NOT NULL,
+    rocznik INT         NOT NULL,
+    silnik  varchar(10) NOT NULL,
+    K_M     int         NOT NULL
+);
+CREATE TABLE klient
+(
+    id       INT         NOT NULL AUTO_INCREMENT,
+    PRIMARY KEY (id),
+    imie     varchar(50) NOT NULL,
+    nazwisko varchar(50) NOT NULL,
+    pesel    long UNIQUE       NOT NULL,
+    nr_tel   long        NOT NULL,
+    id_adres INT         NOT NULL
+);
+CREATE TABLE samochód_model
+(
+    id          INT NOT NULL AUTO_INCREMENT,
+    PRIMARY KEY (id),
+    id_samochód INT NOT NULL,
+    id_model    INT NOT NULL
+);
+CREATE TABLE wynajem
+(
+    id                INT NOT NULL AUTO_INCREMENT,
+    PRIMARY KEY (id),
+    id_samochód_model INT NOT NULL,
+    cena_24h          INT NOT NULL
+);
+CREATE TABLE usługa
+(
+    id                   INT NOT NULL AUTO_INCREMENT,
+    PRIMARY KEY (id),
+    id_pracownik_dostawa INT NOT NULL,
+    id_pracownik_odbiór  INT NOT NULL,
+    id_adres_dostawa     INT NOT NULL,
+    id_adres_obiór       INT NOT NULL,
+    id_wynajem           INT NOT NULL
+);
+CREATE TABLE klient_usługa
+(
+    id            INT  NOT NULL AUTO_INCREMENT,
+    PRIMARY KEY (id),
+    id_klient     INT  NOT NULL,
+    id_usługa     INT  NOT NULL,
+    data_początek DATE NOT NULL,
+    data_koniec   DATE NOT NULL
+);
+
+ALTER TABLE pracownik
+    ADD CONSTRAINT id_pracownik_oddział_fk
+        FOREIGN KEY (id_oddział) REFERENCES oddział (id)
+            ON DELETE CASCADE
+            ON UPDATE CASCADE,
+    ADD CONSTRAINT id_pracownik_adres_fk
+        FOREIGN KEY (id_adres) REFERENCES adres (id)
+            ON DELETE CASCADE
+            ON UPDATE CASCADE;
+
+ALTER TABLE samochód
+    ADD CONSTRAINT id_samochód_oddział_fk
+        FOREIGN KEY (id_oddział) REFERENCES oddział (id)
+            ON DELETE CASCADE
+            ON UPDATE CASCADE;
+
+ALTER TABLE klient
+    ADD CONSTRAINT id_klient_adres_fk
+        FOREIGN KEY (id_adres) REFERENCES adres (id)
+            ON DELETE CASCADE
+            ON UPDATE CASCADE;
+
+ALTER TABLE samochód_model
+    ADD CONSTRAINT id_samochód_model_samochód_fk
+        FOREIGN KEY (id_samochód) REFERENCES samochód (id) ON DELETE NO ACTION ON UPDATE NO ACTION,
+    ADD CONSTRAINT id_samochód_model_model_fk
+        FOREIGN KEY (id_model) REFERENCES model (id)
+            ON DELETE NO ACTION
+            ON UPDATE NO ACTION;
+
+ALTER TABLE wynajem
+    ADD CONSTRAINT id_wynajem_samochód_model_fk
+        FOREIGN KEY (id_samochód_model) REFERENCES samochód_model (id)
+            ON DELETE CASCADE
+            ON UPDATE CASCADE;
+
+ALTER TABLE usługa
+    ADD CONSTRAINT id_usługa_pracownik_dostawa_fk
+        FOREIGN KEY (id_pracownik_dostawa) REFERENCES pracownik (id)
+            ON DELETE CASCADE
+            ON UPDATE CASCADE,
+    ADD CONSTRAINT id_usługa_pracownik_odbiór_fk
+        FOREIGN KEY (id_pracownik_odbiór) REFERENCES pracownik (id)
+            ON DELETE CASCADE
+            ON UPDATE CASCADE,
+    ADD CONSTRAINT id_usługa_adres_dostawa_fk
+        FOREIGN KEY (id_adres_dostawa) REFERENCES adres (id)
+            ON DELETE CASCADE
+            ON UPDATE CASCADE,
+    ADD CONSTRAINT id_usługa_adres_obiór_fk
+        FOREIGN KEY (id_adres_obiór) REFERENCES adres (id)
+            ON DELETE CASCADE
+            ON UPDATE CASCADE,
+    ADD CONSTRAINT id_usługa_wynajem_fk
+        FOREIGN KEY (id_wynajem) REFERENCES wynajem (id)
+            ON DELETE CASCADE
+            ON UPDATE CASCADE;
+
+ALTER TABLE klient_usługa
+    ADD CONSTRAINT id_klient_usługa_klient_fk
+        FOREIGN KEY (id_klient) REFERENCES klient (id)
+            ON DELETE CASCADE
+            ON UPDATE CASCADE,
+ADD CONSTRAINT id_klient_usługa_usługa_fk
+        FOREIGN KEY (id_usługa) REFERENCES usługa (id)
+            ON DELETE CASCADE
+            ON UPDATE CASCADE;
+
+CREATE INDEX klient_imie_idx
+ON klient(imie);
+
+CREATE INDEX pracownik_imie_idx
+ON pracownik(imie);
+
+CREATE INDEX model_marka_idx
+ON model(marka);
+
+CREATE INDEX oddział_miasto_idx
+ON oddział(miasto);
+
+CREATE INDEX samochód_rejestracja_idx
+ON samochód(rejestracja);
+
+CREATE INDEX adres_miasto_idx
+ON adres(miasto);
+
+insert into adres (kraj, ulica, miasto, kod_pocztowy) values ('Poland', '2 Prairieview Park', 'Drawsko Pomorskie', '78-500');
+insert into adres (kraj, ulica, miasto, kod_pocztowy) values ('Poland', '06574 Raven Lane', 'Jarocin', '63-202');
+insert into adres (kraj, ulica, miasto, kod_pocztowy) values ('Poland', '1727 Lotheville Street', 'Łopuszna', '34-432');
+insert into adres (kraj, ulica, miasto, kod_pocztowy) values ('Poland', '286 Dakota Pass', 'Marki', '05-270');
+insert into adres (kraj, ulica, miasto, kod_pocztowy) values ('Poland', '454 Graceland Junction', 'Miłosław', '62-320');
+insert into adres (kraj, ulica, miasto, kod_pocztowy) values ('Poland', '288 Meadow Ridge Street', 'Żelistrzewo', '84-122');
+insert into adres (kraj, ulica, miasto, kod_pocztowy) values ('Poland', '5 Stoughton Plaza', 'Jasionów', '36-212');
+insert into adres (kraj, ulica, miasto, kod_pocztowy) values ('Poland', '11011 Hazelcrest Pass', 'Janowiec', '24-123');
+insert into adres (kraj, ulica, miasto, kod_pocztowy) values ('Poland', '61 Rieder Crossing', 'Siemiatycze', '17-301');
+insert into adres (kraj, ulica, miasto, kod_pocztowy) values ('Poland', '95 Eliot Way', 'Drzewica', '26-340');
+insert into adres (kraj, ulica, miasto, kod_pocztowy) values ('Poland', '409 Northland Circle', 'Mazańcowice', '43-391');
+insert into adres (kraj, ulica, miasto, kod_pocztowy) values ('Poland', '04 Quincy Crossing', 'Wysokie Mazowieckie', '18-200');
+insert into adres (kraj, ulica, miasto, kod_pocztowy) values ('Poland', '99592 Marcy Place', 'Werbkowice', '22-550');
+insert into adres (kraj, ulica, miasto, kod_pocztowy) values ('Poland', '133 Blackbird Park', 'Niebylec', '38-114');
+insert into adres (kraj, ulica, miasto, kod_pocztowy) values ('Poland', '346 Moland Way', 'Lwówek Śląski', '59-601');
+insert into adres (kraj, ulica, miasto, kod_pocztowy) values ('Poland', '67 Anderson Place', 'Wydminy', '11-510');
+insert into adres (kraj, ulica, miasto, kod_pocztowy) values ('Poland', '2 Springs Alley', 'Trzcińsko Zdrój', '74-510');
+insert into adres (kraj, ulica, miasto, kod_pocztowy) values ('Poland', '3452 Walton Circle', 'Pogórze', '43-430');
+insert into adres (kraj, ulica, miasto, kod_pocztowy) values ('Poland', '2 Sugar Avenue', 'Mysiadło', '05-509');
+insert into adres (kraj, ulica, miasto, kod_pocztowy) values ('Poland', '6 Village Lane', 'Jedlińsk', '26-660');
+insert into adres (kraj, ulica, miasto, kod_pocztowy) values ('Poland', '82075 Pankratz Avenue', 'Jawor', '59-402');
+insert into adres (kraj, ulica, miasto, kod_pocztowy) values ('Poland', '015 Pierstorff Place', 'Chełmiec', '33-395');
+insert into adres (kraj, ulica, miasto, kod_pocztowy) values ('Poland', '3084 Stephen Alley', 'Trzebinia', '32-541');
+insert into adres (kraj, ulica, miasto, kod_pocztowy) values ('Poland', '3538 Mockingbird Terrace', 'Rakszawa', '37-111');
+insert into adres (kraj, ulica, miasto, kod_pocztowy) values ('Poland', '93369 Eagle Crest Avenue', 'Konstantynów Łódzki', '95-050');
+insert into adres (kraj, ulica, miasto, kod_pocztowy) values ('Poland', '03221 Iowa Road', 'Raszków', '63-440');
+insert into adres (kraj, ulica, miasto, kod_pocztowy) values ('Poland', '316 Nova Road', 'Kłoczew', '08-550');
+insert into adres (kraj, ulica, miasto, kod_pocztowy) values ('Poland', '899 Union Hill', 'Zmiennica', '36-212');
+insert into adres (kraj, ulica, miasto, kod_pocztowy) values ('Poland', '07434 Park Meadow Hill', 'Trzciana', '36-071');
+insert into adres (kraj, ulica, miasto, kod_pocztowy) values ('Poland', '6 Haas Hill', 'Sędziszów', '28-340');
+insert into adres (kraj, ulica, miasto, kod_pocztowy) values ('Poland', '7348 Blackbird Drive', 'Prusice', '55-110');
+insert into adres (kraj, ulica, miasto, kod_pocztowy) values ('Poland', '092 Becker Crossing', 'Drzewica', '26-340');
+insert into adres (kraj, ulica, miasto, kod_pocztowy) values ('Poland', '50432 Sutteridge Hill', 'Strzelin', '57-100');
+insert into adres (kraj, ulica, miasto, kod_pocztowy) values ('Poland', '9535 Spenser Way', 'Pokój', '46-034');
+insert into adres (kraj, ulica, miasto, kod_pocztowy) values ('Poland', '22836 Charing Cross Pass', 'Janikowo', '88-160');
+insert into adres (kraj, ulica, miasto, kod_pocztowy) values ('Poland', '91438 Crest Line Street', 'Trzcinica', '63-620');
+insert into adres (kraj, ulica, miasto, kod_pocztowy) values ('Poland', '6236 Haas Way', 'Dziergowice', '47-244');
+insert into adres (kraj, ulica, miasto, kod_pocztowy) values ('Poland', '759 Hanover Crossing', 'Huta Stara B', '42-262');
+insert into adres (kraj, ulica, miasto, kod_pocztowy) values ('Poland', '3 Bluejay Drive', 'Łobodno', '42-125');
+insert into adres (kraj, ulica, miasto, kod_pocztowy) values ('Poland', '8 Hallows Place', 'Sosnowiec', '41-221');
+insert into adres (kraj, ulica, miasto, kod_pocztowy) values ('Poland', '89 Carey Way', 'Długosiodło', '07-210');
+insert into adres (kraj, ulica, miasto, kod_pocztowy) values ('Poland', '4 Russell Court', 'Borzęta', '32-447');
+insert into adres (kraj, ulica, miasto, kod_pocztowy) values ('Poland', '01014 Union Court', 'Gąsocin', '06-440');
+insert into adres (kraj, ulica, miasto, kod_pocztowy) values ('Poland', '81 Trailsway Avenue', 'Kaliska', '83-260');
+insert into adres (kraj, ulica, miasto, kod_pocztowy) values ('Poland', '7518 Armistice Circle', 'Ruda-Huta', '22-110');
+insert into adres (kraj, ulica, miasto, kod_pocztowy) values ('Poland', '023 Continental Pass', 'Żarów', '58-130');
+insert into adres (kraj, ulica, miasto, kod_pocztowy) values ('Poland', '68365 Crownhardt Alley', 'Sadowie', '27-580');
+insert into adres (kraj, ulica, miasto, kod_pocztowy) values ('Poland', '34399 Steensland Lane', 'Wydminy', '11-510');
+insert into adres (kraj, ulica, miasto, kod_pocztowy) values ('Poland', '81550 Ruskin Place', 'Zabrze', '41-840');
+insert into adres (kraj, ulica, miasto, kod_pocztowy) values ('Poland', '3460 Sullivan Parkway', 'Osiedle-Nowiny', '93-154');
+insert into adres (kraj, ulica, miasto, kod_pocztowy) values ('Poland', '63794 Pennsylvania Lane', 'Dąbrowa', '88-306');
+insert into adres (kraj, ulica, miasto, kod_pocztowy) values ('Poland', '61187 Linden Alley', 'Zagórnik', '34-125');
+insert into adres (kraj, ulica, miasto, kod_pocztowy) values ('Poland', '96 Golf View Point', 'Rogów', '95-063');
+insert into adres (kraj, ulica, miasto, kod_pocztowy) values ('Poland', '204 Erie Plaza', 'Ostrów Wielkopolski', '63-417');
+insert into adres (kraj, ulica, miasto, kod_pocztowy) values ('Poland', '729 Hanover Lane', 'Pruszków', '05-804');
+insert into adres (kraj, ulica, miasto, kod_pocztowy) values ('Poland', '045 Portage Park', 'Sulbiny Górne', '08-420');
+insert into adres (kraj, ulica, miasto, kod_pocztowy) values ('Poland', '67 Browning Plaza', 'Sułów', '56-306');
+insert into adres (kraj, ulica, miasto, kod_pocztowy) values ('Poland', '3157 Dennis Plaza', 'Małkinia Górna', '07-320');
+insert into adres (kraj, ulica, miasto, kod_pocztowy) values ('Poland', '958 Hallows Lane', 'Wola Jachowa', '01-943');
+insert into adres (kraj, ulica, miasto, kod_pocztowy) values ('Poland', '6454 Monterey Lane', 'Czechowice-Dziedzice', '43-503');
+insert into adres (kraj, ulica, miasto, kod_pocztowy) values ('Poland', '20 Del Sol Plaza', 'Czerwonak', '62-004');
+insert into adres (kraj, ulica, miasto, kod_pocztowy) values ('Poland', '48606 South Court', 'Ursus', '05-850');
+insert into adres (kraj, ulica, miasto, kod_pocztowy) values ('Poland', '995 Dennis Drive', 'Skrwilno', '87-510');
+insert into adres (kraj, ulica, miasto, kod_pocztowy) values ('Poland', '20 Golden Leaf Court', 'Grabów', '99-150');
+insert into adres (kraj, ulica, miasto, kod_pocztowy) values ('Poland', '3 Golf View Crossing', 'Mrozy', '05-320');
+insert into adres (kraj, ulica, miasto, kod_pocztowy) values ('Poland', '402 Stang Center', 'Kolsko', '67-415');
+insert into adres (kraj, ulica, miasto, kod_pocztowy) values ('Poland', '47624 Melvin Pass', 'Opatowiec', '28-520');
+insert into adres (kraj, ulica, miasto, kod_pocztowy) values ('Poland', '35 Carberry Park', 'Sarnów', '39-333');
+insert into adres (kraj, ulica, miasto, kod_pocztowy) values ('Poland', '2389 Mifflin Parkway', 'Lelkowo', '14-521');
+insert into adres (kraj, ulica, miasto, kod_pocztowy) values ('Poland', '62 Raven Place', 'Sypniewo', '06-216');
+insert into adres (kraj, ulica, miasto, kod_pocztowy) values ('Poland', '35681 Rusk Terrace', 'Tyczyn', '36-020');
+insert into adres (kraj, ulica, miasto, kod_pocztowy) values ('Poland', '4653 Eagle Crest Circle', 'Dębów', '37-230');
+insert into adres (kraj, ulica, miasto, kod_pocztowy) values ('Poland', '57 Arapahoe Point', 'Raciąż', '09-140');
+insert into adres (kraj, ulica, miasto, kod_pocztowy) values ('Poland', '88427 Superior Plaza', 'Karpacz', '58-550');
+insert into adres (kraj, ulica, miasto, kod_pocztowy) values ('Poland', '824 Cody Street', 'Łęki', '38-473');
+insert into adres (kraj, ulica, miasto, kod_pocztowy) values ('Poland', '1 Hudson Circle', 'Budziszewice', '97-212');
+insert into adres (kraj, ulica, miasto, kod_pocztowy) values ('Poland', '147 Dawn Center', 'Żabia Wola', '96-321');
+insert into adres (kraj, ulica, miasto, kod_pocztowy) values ('Poland', '4458 Lake View Circle', 'Mełgiew', '21-007');
+insert into adres (kraj, ulica, miasto, kod_pocztowy) values ('Poland', '41 Gina Way', 'Krasne', '36-007');
+insert into adres (kraj, ulica, miasto, kod_pocztowy) values ('Poland', '20 Donald Point', 'Pierzchnica', '26-015');
+insert into adres (kraj, ulica, miasto, kod_pocztowy) values ('Poland', '44499 Memorial Avenue', 'Tymbark', '34-650');
+insert into adres (kraj, ulica, miasto, kod_pocztowy) values ('Poland', '5 Magdeline Circle', 'Wielka Wieś', '32-089');
+insert into adres (kraj, ulica, miasto, kod_pocztowy) values ('Poland', '8 Crescent Oaks Way', 'Mełgiew', '21-007');
+insert into adres (kraj, ulica, miasto, kod_pocztowy) values ('Poland', '12850 Alpine Trail', 'Karsin', '83-440');
+insert into adres (kraj, ulica, miasto, kod_pocztowy) values ('Poland', '14 Summerview Point', 'Rajsko', '32-626');
+insert into adres (kraj, ulica, miasto, kod_pocztowy) values ('Poland', '927 Vernon Street', 'Słupno', '09-472');
+insert into adres (kraj, ulica, miasto, kod_pocztowy) values ('Poland', '4319 Northview Street', 'Gózd', '26-634');
+insert into adres (kraj, ulica, miasto, kod_pocztowy) values ('Poland', '0613 Carberry Avenue', 'Świeradów-Zdrój', '59-852');
+insert into adres (kraj, ulica, miasto, kod_pocztowy) values ('Poland', '8409 La Follette Hill', 'Chruszczobród', '15-337');
+insert into adres (kraj, ulica, miasto, kod_pocztowy) values ('Poland', '68 Sloan Street', 'Chojnów', '59-225');
+insert into adres (kraj, ulica, miasto, kod_pocztowy) values ('Poland', '070 Utah Point', 'Wojnicz', '32-830');
+insert into adres (kraj, ulica, miasto, kod_pocztowy) values ('Poland', '6865 Judy Road', 'Krzeszów', '58-405');
+insert into adres (kraj, ulica, miasto, kod_pocztowy) values ('Poland', '419 Kropf Way', 'Dębe Wielkie', '05-311');
+insert into adres (kraj, ulica, miasto, kod_pocztowy) values ('Poland', '698 Spenser Alley', 'Cieplice Śląskie Zdrój', '58-588');
+insert into adres (kraj, ulica, miasto, kod_pocztowy) values ('Poland', '1 Welch Parkway', 'Cedynia', '74-520');
+insert into adres (kraj, ulica, miasto, kod_pocztowy) values ('Poland', '687 Fisk Court', 'Dolice', '73-115');
+insert into adres (kraj, ulica, miasto, kod_pocztowy) values ('Poland', '00357 Banding Court', 'Piekielnik', '34-472');
+insert into adres (kraj, ulica, miasto, kod_pocztowy) values ('Poland', '582 Washington Terrace', 'Jeżów', '95-047');
+insert into adres (kraj, ulica, miasto, kod_pocztowy) values ('Poland', '409 Claremont Park', 'Solec Nad Wisłą', '80-201');
+insert into adres (kraj, ulica, miasto, kod_pocztowy) values ('Poland', '694 Melrose Plaza', 'Księżpol', '23-415');
+
+insert into oddział (kraj, miasto) values ('Poland', 'Ostrów Wielkopolski');
+insert into oddział (kraj, miasto) values ('Poland', 'Pecna');
+insert into oddział (kraj, miasto) values ('Poland', 'Bujaków');
+insert into oddział (kraj, miasto) values ('Poland', 'Lipiany');
+insert into oddział (kraj, miasto) values ('Poland', 'Goczałkowice Zdrój');
+
+insert into pracownik (imie, nazwisko, id_oddział, id_adres, pesel, nr_tel, data_zatrudnienie, pensja) values ('Dita', 'Mulholland', 1, 41, 95840588113, '4891930519', '2021-09-01', 3277.07);
+insert into pracownik (imie, nazwisko, id_oddział, id_adres, pesel, nr_tel, data_zatrudnienie, pensja) values ('Jennica', 'Edgecumbe', 1, 42, 94256125677, '4336387258', '2021-10-25', 3292.87);
+insert into pracownik (imie, nazwisko, id_oddział, id_adres, pesel, nr_tel, data_zatrudnienie, pensja) values ('Alta', 'McPolin', 1, 43, 91317542806, '2085296064', '2021-09-20', 3838.99);
+insert into pracownik (imie, nazwisko, id_oddział, id_adres, pesel, nr_tel, data_zatrudnienie, pensja) values ('Reinald', 'Hambric', 1, 44, 93481132772, '6719447040', '2021-10-30', 3533.64);
+insert into pracownik (imie, nazwisko, id_oddział, id_adres, pesel, nr_tel, data_zatrudnienie, pensja) values ('Athena', 'Freeburn', 2, 45, 93594048171, '2659983763', '2021-09-15', 3915.4);
+insert into pracownik (imie, nazwisko, id_oddział, id_adres, pesel, nr_tel, data_zatrudnienie, pensja) values ('Elie', 'Mewitt', 2, 46, 93409119158, '9206350539', '2021-12-01', 3047.94);
+insert into pracownik (imie, nazwisko, id_oddział, id_adres, pesel, nr_tel, data_zatrudnienie, pensja) values ('Jedd', 'Pervew', 2, 47, 93579945227, '1396699892', '2021-10-22', 3098.45);
+insert into pracownik (imie, nazwisko, id_oddział, id_adres, pesel, nr_tel, data_zatrudnienie, pensja) values ('Gawain', 'Pickton', 2, 48, 91921034778, '1241549214', '2021-11-30', 3519.44);
+insert into pracownik (imie, nazwisko, id_oddział, id_adres, pesel, nr_tel, data_zatrudnienie, pensja) values ('Bria', 'Nester', 3, 49, 97596067757, '6772405153', '2021-11-07', 3522.78);
+insert into pracownik (imie, nazwisko, id_oddział, id_adres, pesel, nr_tel, data_zatrudnienie, pensja) values ('Konstance', 'Baglin', 3, 50, 95669326245, '3131643693', '2021-10-12', 3264.79);
+insert into pracownik (imie, nazwisko, id_oddział, id_adres, pesel, nr_tel, data_zatrudnienie, pensja) values ('Ivonne', 'Extance', 3, 3, 98726344205, '5783278390', '2021-09-07', 3710.89);
+insert into pracownik (imie, nazwisko, id_oddział, id_adres, pesel, nr_tel, data_zatrudnienie, pensja) values ('Lucina', 'Bonnavant', 3, 51, 95329997815, '4259174372', '2021-12-29', 3849.64);
+insert into pracownik (imie, nazwisko, id_oddział, id_adres, pesel, nr_tel, data_zatrudnienie, pensja) values ('Harman', 'Salway', 4, 52, 98456178415, '1476694368', '2021-09-18', 3038.71);
+insert into pracownik (imie, nazwisko, id_oddział, id_adres, pesel, nr_tel, data_zatrudnienie, pensja) values ('Trip', 'Haysman', 4, 53, 91277507161, '4134161243', '2021-09-18', 3522.9);
+insert into pracownik (imie, nazwisko, id_oddział, id_adres, pesel, nr_tel, data_zatrudnienie, pensja) values ('Robbin', 'Tott', 4, 54, 92855599811, '3747864338', '2021-10-30', 3655.91);
+insert into pracownik (imie, nazwisko, id_oddział, id_adres, pesel, nr_tel, data_zatrudnienie, pensja) values ('Susi', 'Veltman', 4, 55, 93430973135, '8253412175', '2021-12-26', 3764.85);
+insert into pracownik (imie, nazwisko, id_oddział, id_adres, pesel, nr_tel, data_zatrudnienie, pensja) values ('Garwin', 'Flori', 5, 56, 91705956832, '8636211700', '2021-11-16', 3445.12);
+insert into pracownik (imie, nazwisko, id_oddział, id_adres, pesel, nr_tel, data_zatrudnienie, pensja) values ('Vincents', 'Mariolle', 5, 57, 90706830848, '9513587288', '2021-10-04', 3074.1);
+insert into pracownik (imie, nazwisko, id_oddział, id_adres, pesel, nr_tel, data_zatrudnienie, pensja) values ('Lynne', 'Presman', 5, 58, 90064528144, '1014859988', '2021-11-18', 3551.04);
+insert into pracownik (imie, nazwisko, id_oddział, id_adres, pesel, nr_tel, data_zatrudnienie, pensja) values ('Massimo', 'Aloigi', 5, 59, 96528630293, '9641839519', '2021-11-04', 3387.37);
+
+insert into klient (imie, nazwisko, nr_tel, id_adres, pesel) values ('Ashley', 'Merigeau', '4787387899', 1, 99521137929);
+insert into klient (imie, nazwisko, nr_tel, id_adres, pesel) values ('Weston', 'Virgo', '5054871438', 2, 94912412746);
+insert into klient (imie, nazwisko, nr_tel, id_adres, pesel) values ('Charlot', 'Pilpovic', '5133149073', 3, 90413122437);
+insert into klient (imie, nazwisko, nr_tel, id_adres, pesel) values ('Brit', 'Gair', '1446638769', 4, 97495827014);
+insert into klient (imie, nazwisko, nr_tel, id_adres, pesel) values ('Nathalia', 'Woollhead', '7753885750', 5, 94126022950);
+insert into klient (imie, nazwisko, nr_tel, id_adres, pesel) values ('Stavro', 'Oliveras', '4672405941', 6, 90669647998);
+insert into klient (imie, nazwisko, nr_tel, id_adres, pesel) values ('Zedekiah', 'Whittlesea', '9223050832', 7, 93428596792);
+insert into klient (imie, nazwisko, nr_tel, id_adres, pesel) values ('Albina', 'Knappen', '4236430932', 8, 96166723774);
+insert into klient (imie, nazwisko, nr_tel, id_adres, pesel) values ('Vilma', 'Hackly', '3859821903', 9, 95751353066);
+insert into klient (imie, nazwisko, nr_tel, id_adres, pesel) values ('Clare', 'Garrit', '7626336562', 10, 95922871857);
+insert into klient (imie, nazwisko, nr_tel, id_adres, pesel) values ('Vite', 'Wagg', '7097511124', 11, 96362550359);
+insert into klient (imie, nazwisko, nr_tel, id_adres, pesel) values ('Son', 'Inston', '8831020242', 12, 96444881731);
+insert into klient (imie, nazwisko, nr_tel, id_adres, pesel) values ('Brenn', 'Bissill', '7049736830', 13, 96373807915);
+insert into klient (imie, nazwisko, nr_tel, id_adres, pesel) values ('Dewain', 'Heales', '3402026636', 14, 98090630716);
+insert into klient (imie, nazwisko, nr_tel, id_adres, pesel) values ('Leelah', 'Tayloe', '5041252507', 15, 93038349004);
+insert into klient (imie, nazwisko, nr_tel, id_adres, pesel) values ('Reuven', 'Miner', '3499696753', 16, 91146306665);
+insert into klient (imie, nazwisko, nr_tel, id_adres, pesel) values ('Marline', 'Mattiello', '4588411178', 17, 95888591605);
+insert into klient (imie, nazwisko, nr_tel, id_adres, pesel) values ('Ingar', 'Braznell', '5786941672', 18, 92952939539);
+insert into klient (imie, nazwisko, nr_tel, id_adres, pesel) values ('Samuele', 'Bruins', '6598370994', 19, 97447660138);
+insert into klient (imie, nazwisko, nr_tel, id_adres, pesel) values ('Blondy', 'Ellaway', '5701569207', 20, 96905952187);
+insert into klient (imie, nazwisko, nr_tel, id_adres, pesel) values ('Eada', 'Lere', '9923669576', 21, 90787900842);
+insert into klient (imie, nazwisko, nr_tel, id_adres, pesel) values ('Nicky', 'Barfitt', '5903075442', 22, 97372268328);
+insert into klient (imie, nazwisko, nr_tel, id_adres, pesel) values ('Gaby', 'Cranstoun', '8139835745', 23, 95487000724);
+insert into klient (imie, nazwisko, nr_tel, id_adres, pesel) values ('Bronson', 'Voce', '4907111719', 24, 90895617100);
+insert into klient (imie, nazwisko, nr_tel, id_adres, pesel) values ('Benedicta', 'Ertelt', '4047782702', 25, 93721499605);
+insert into klient (imie, nazwisko, nr_tel, id_adres, pesel) values ('Arluene', 'Kuschek', '7628967910', 26, 95707032004);
+insert into klient (imie, nazwisko, nr_tel, id_adres, pesel) values ('Garv', 'Wallman', '2093216438', 27, 98139749195);
+insert into klient (imie, nazwisko, nr_tel, id_adres, pesel) values ('Bobine', 'Greener', '3514847585', 28, 92549528089);
+insert into klient (imie, nazwisko, nr_tel, id_adres, pesel) values ('Delia', 'Linford', '7206594433', 29, 96400032617);
+insert into klient (imie, nazwisko, nr_tel, id_adres, pesel) values ('Gustavo', 'Grindle', '9816297476', 30, 95618052568);
+insert into klient (imie, nazwisko, nr_tel, id_adres, pesel) values ('Nicolina', 'Parmer', '4195362569', 31, 92036413848);
+insert into klient (imie, nazwisko, nr_tel, id_adres, pesel) values ('Caty', 'Fawlks', '5544628886', 32, 94804410087);
+insert into klient (imie, nazwisko, nr_tel, id_adres, pesel) values ('Cherye', 'Mackriell', '8839402115', 33, 97196195951);
+insert into klient (imie, nazwisko, nr_tel, id_adres, pesel) values ('Nahum', 'Elphick', '9429696349', 34, 99596542908);
+insert into klient (imie, nazwisko, nr_tel, id_adres, pesel) values ('Ulrich', 'Alfwy', '8353970795', 35, 96614456811);
+insert into klient (imie, nazwisko, nr_tel, id_adres, pesel) values ('Eric', 'Liddyard', '3089454288', 36, 94677680265);
+insert into klient (imie, nazwisko, nr_tel, id_adres, pesel) values ('Enoch', 'Satch', '9193722675', 37, 93433103513);
+insert into klient (imie, nazwisko, nr_tel, id_adres, pesel) values ('Antoine', 'Ackerman', '2672190363', 38, 98871017523);
+insert into klient (imie, nazwisko, nr_tel, id_adres, pesel) values ('Bartholomeo', 'Myott', '9535016252', 39, 90769569053);
+insert into klient (imie, nazwisko, nr_tel, id_adres, pesel) values ('Gray', 'Clulow', '7893894115', 40, 92166463145);
+
+insert into samochód (id_oddział, rejestracja, sprawny) values (1, '1GKS1KE00CR263748', true);
+insert into samochód (id_oddział, rejestracja, sprawny) values (1, 'WAUHF98P68A454215', true);
+insert into samochód (id_oddział, rejestracja, sprawny) values (1, '1N6AA0CC1DN803672', true);
+insert into samochód (id_oddział, rejestracja, sprawny) values (2, 'TRUUT28N541590237', true);
+insert into samochód (id_oddział, rejestracja, sprawny) values (2, '1FMJK1J52AE262937', true);
+insert into samochód (id_oddział, rejestracja, sprawny) values (2, '5UXWX5C58BL940234', true);
+insert into samochód (id_oddział, rejestracja, sprawny) values (3, '1G6DS5E36C0864022', true);
+insert into samochód (id_oddział, rejestracja, sprawny) values (3, '3C6JD7EP3CG160842', true);
+insert into samochód (id_oddział, rejestracja, sprawny) values (4, '1FTEW1CW1AF934870', true);
+insert into samochód (id_oddział, rejestracja, sprawny) values (4, '3C6TD5HT5CG252718', false);
+insert into samochód (id_oddział, rejestracja, sprawny) values (4, 'WBAUC9C55DV127546', true);
+insert into samochód (id_oddział, rejestracja, sprawny) values (4, '1G6DA67V590606042', true);
+insert into samochód (id_oddział, rejestracja, sprawny) values (5, '3GYFNDEY8AS699061', true);
+insert into samochód (id_oddział, rejestracja, sprawny) values (5, 'KNDPB3AC8E7764356', true);
+insert into samochód (id_oddział, rejestracja, sprawny) values (5, 'YV126MEB9F1900904', false);
+
+insert into model (marka, model, rocznik, silnik, K_M) values ('GMC', 'Sierra 1500', 2002, 4.8, 199);
+insert into model (marka, model, rocznik, silnik, K_M) values ('Porsche', 'Cayman', 2007, 1.4, 212);
+insert into model (marka, model, rocznik, silnik, K_M) values ('Nissan', 'Sentra', 2004, 2.8, 230);
+insert into model (marka, model, rocznik, silnik, K_M) values ('Mercedes-Benz', 'G-Class', 2007, 2.2, 237);
+insert into model (marka, model, rocznik, silnik, K_M) values ('Toyota', 'Solara', 2006, 3.0, 231);
+
+insert into samochód_model (id_samochód, id_model) values (1, 5);
+insert into samochód_model (id_samochód, id_model) values (2, 5);
+insert into samochód_model (id_samochód, id_model) values (3, 3);
+insert into samochód_model (id_samochód, id_model) values (4, 2);
+insert into samochód_model (id_samochód, id_model) values (5, 2);
+insert into samochód_model (id_samochód, id_model) values (6, 4);
+insert into samochód_model (id_samochód, id_model) values (7, 4);
+insert into samochód_model (id_samochód, id_model) values (8, 1);
+insert into samochód_model (id_samochód, id_model) values (9, 3);
+insert into samochód_model (id_samochód, id_model) values (10, 3);
+insert into samochód_model (id_samochód, id_model) values (11, 2);
+insert into samochód_model (id_samochód, id_model) values (12, 5);
+insert into samochód_model (id_samochód, id_model) values (13, 2);
+insert into samochód_model (id_samochód, id_model) values (14, 4);
+insert into samochód_model (id_samochód, id_model) values (15, 5);
+
+insert into wynajem (id_samochód_model, cena_24h) values (1, 360);
+insert into wynajem (id_samochód_model, cena_24h) values (2, 231);
+insert into wynajem (id_samochód_model, cena_24h) values (3, 462);
+insert into wynajem (id_samochód_model, cena_24h) values (4, 367);
+insert into wynajem (id_samochód_model, cena_24h) values (5, 318);
+insert into wynajem (id_samochód_model, cena_24h) values (6, 234);
+insert into wynajem (id_samochód_model, cena_24h) values (7, 233);
+insert into wynajem (id_samochód_model, cena_24h) values (8, 411);
+insert into wynajem (id_samochód_model, cena_24h) values (9, 255);
+insert into wynajem (id_samochód_model, cena_24h) values (10, 271);
+insert into wynajem (id_samochód_model, cena_24h) values (11, 471);
+insert into wynajem (id_samochód_model, cena_24h) values (12, 316);
+insert into wynajem (id_samochód_model, cena_24h) values (13, 347);
+insert into wynajem (id_samochód_model, cena_24h) values (14, 204);
+insert into wynajem (id_samochód_model, cena_24h) values (15, 348);
+
+insert into usługa (id_pracownik_dostawa, id_pracownik_odbiór, id_adres_dostawa, id_adres_obiór, id_wynajem) values (4, 1, 2, 61, 1);
+insert into usługa (id_pracownik_dostawa, id_pracownik_odbiór, id_adres_dostawa, id_adres_obiór, id_wynajem) values (1, 3, 4, 4, 2);
+insert into usługa (id_pracownik_dostawa, id_pracownik_odbiór, id_adres_dostawa, id_adres_obiór, id_wynajem) values (2, 4, 5, 5, 3);
+insert into usługa (id_pracownik_dostawa, id_pracownik_odbiór, id_adres_dostawa, id_adres_obiór, id_wynajem) values (5, 8, 7, 7, 4);
+insert into usługa (id_pracownik_dostawa, id_pracownik_odbiór, id_adres_dostawa, id_adres_obiór, id_wynajem) values (7, 6, 9, 65, 5);
+insert into usługa (id_pracownik_dostawa, id_pracownik_odbiór, id_adres_dostawa, id_adres_obiór, id_wynajem) values (9, 11, 11, 11, 8);
+insert into usługa (id_pracownik_dostawa, id_pracownik_odbiór, id_adres_dostawa, id_adres_obiór, id_wynajem) values (12, 10, 14, 98, 9);
+insert into usługa (id_pracownik_dostawa, id_pracownik_odbiór, id_adres_dostawa, id_adres_obiór, id_wynajem) values (16, 13, 16, 16, 11);
+insert into usługa (id_pracownik_dostawa, id_pracownik_odbiór, id_adres_dostawa, id_adres_obiór, id_wynajem) values (14, 15, 18, 18, 12);
+insert into usługa (id_pracownik_dostawa, id_pracownik_odbiór, id_adres_dostawa, id_adres_obiór, id_wynajem) values (20, 17, 21, 21, 14);
+
+insert into klient_usługa (id_klient, id_usługa, data_początek, data_koniec) values (2, 1, '2022-01-14', '2022-02-10');
+insert into klient_usługa (id_klient, id_usługa, data_początek, data_koniec) values (4, 2, '2022-01-29', '2022-02-17');
+insert into klient_usługa (id_klient, id_usługa, data_początek, data_koniec) values (5, 3, '2022-01-21', '2022-02-19');
+insert into klient_usługa (id_klient, id_usługa, data_początek, data_koniec) values (7, 4, '2022-01-23', '2022-02-26');
+insert into klient_usługa (id_klient, id_usługa, data_początek, data_koniec) values (9, 5, '2022-01-25', '2022-02-16');
+insert into klient_usługa (id_klient, id_usługa, data_początek, data_koniec) values (11, 6, '2022-01-22', '2022-02-15');
+insert into klient_usługa (id_klient, id_usługa, data_początek, data_koniec) values (14, 7, '2022-01-26', '2022-02-06');
+insert into klient_usługa (id_klient, id_usługa, data_początek, data_koniec) values (16, 8, '2022-01-14', '2022-02-20');
+insert into klient_usługa (id_klient, id_usługa, data_początek, data_koniec) values (18, 9, '2022-01-26', '2022-02-08');
+insert into klient_usługa (id_klient, id_usługa, data_początek, data_koniec) values (21, 10, '2022-01-12', '2022-02-07');
+
+/*___________________________________________________________________________________________________________________________
+
+							TWORZENIE WIDOKÓW
+___________________________________________________________________________________________________________________________*/
+
+
+/*---------DANE WYNAJMU (ID KLIENTA, MARKA MODEL SAMOCHODU, CENA WYNAJMU)---------*/
+create view dane_wynajmu
+AS SELECT klient.id as 'id_klient', marka, model ,datediff(data_koniec, data_początek) as 'liczba_dni', datediff(data_koniec, data_początek)*w.cena_24h as 'cena_total'
+FROM klient
+JOIN klient_usługa ku on klient.id = ku.id_klient
+join usługa u on ku.id_usługa = u.id
+join wynajem w on u.id_wynajem = w.id
+join samochód_model sm on sm.id = w.id_samochód_model
+join model m on sm.id_model = m.id;
+
+/*---------DANE WYNAJMU UPDATE SORTUJĄCY PO ID KLIENTA OD NAJWYŻSZEGO---------*/
+alter view dane_wynajmu
+AS SELECT klient.id as 'id_klient', marka, model ,datediff(data_koniec, data_początek) as 'liczba_dni', datediff(data_koniec, data_początek)*w.cena_24h as 'cena_total'
+FROM klient
+JOIN klient_usługa ku on klient.id = ku.id_klient
+join usługa u on ku.id_usługa = u.id
+join wynajem w on u.id_wynajem = w.id
+join samochód_model sm on sm.id = w.id_samochód_model
+join model m on sm.id_model = m.id
+order by klient.id desc;
+
+
+
+/*___________________________________________________________________________________________________________________________*/
+
+/*---------DANE KLIENTÓW Z ADRESEM---------*/
+CREATE VIEW dane_klient
+AS SELECT klient.id as 'id_klienta', imie, nazwisko,pesel, nr_tel, ulica, miasto
+FROM klient
+join adres a on a.id = klient.id_adres;
+
+/*---------DANE PRACOWNIKA Z ADRESEM---------*/
+CREATE VIEW dane_pracownik
+AS SELECT pracownik.id as 'id_pracownika', imie, nazwisko,pesel, nr_tel, ulica, miasto
+FROM pracownik
+join adres a on a.id = pracownik.id_adres;
+
+/*___________________________________________________________________________________________________________________________*/
+
+/*---------SAMOCHODY SPRAWNE---------*/
+CREATE VIEW samochody_sprawne
+AS SELECT samochód.id, samochód.rejestracja, m.marka, m.model, samochód.sprawny
+FROM samochód
+join samochód_model sm on samochód.id = sm.id_samochód
+join model m on m.id = sm.id_model
+WHERE samochód.sprawny = true;
+
+/*---------SAMOCHODY SPRAWNE UPDATE SORTUJĄCY PO ID---------*/
+ALTER VIEW samochody_sprawne
+AS SELECT samochód.id, samochód.rejestracja, m.marka, m.model, samochód.sprawny
+FROM samochód
+join samochód_model sm on samochód.id = sm.id_samochód
+join model m on m.id = sm.id_model
+WHERE samochód.sprawny = true
+ORDER BY samochód.id;
+
+/*---------SAMOCHODY NIESPRAWNE---------*/
+CREATE VIEW samochody_niesprawne
+AS SELECT samochód.id, samochód.rejestracja, m.marka, m.model, samochód.sprawny
+FROM samochód
+join samochód_model sm on samochód.id = sm.id_samochód
+join model m on m.id = sm.id_model
+WHERE samochód.sprawny = false;
+
+/*___________________________________________________________________________________________________________________________
+
+							ZAPYTANIA DO BAZY DANYCH
+___________________________________________________________________________________________________________________________*/
+
+/*---------WYKORZYSTANIE WIDOKI---------*/
+
+-- Select pozwalający dodać imie I numer do klienta do widoku dane_wynajmu I sortować po jego id
+SELECT dane_wynajmu.*, pesel, nr_tel FROM dane_wynajmu
+join klient;
+
+-- Select pozwalający wyświetlić pełne dane klienta
+SELECT * FROM dane_klient;
+
+-- Select pozwalający wyświetlić pełne dane pracowników o id 1-5
+SELECT * FROM dane_pracownik
+WHERE dane_pracownik.id_pracownika BETWEEN 1 AND 5;
+
+-- Select pozwalający wyświetlić rejestracje wszystkich sprawnych samochodów toyota solara
+SELECT rejestracja FROM samochody_sprawne
+WHERE marka = 'Toyota' AND model = 'SOLARA';
+
+-- Select pozwalający wyświetlić rejestrację markę oraz model każdego niesprawnego pojazdu
+SELECT rejestracja, marka, model FROM samochody_niesprawne;
+
+/*---------WYKORZYSTANIE FUNKCJI LEFT RIGHT FULL JOIN---------*/
+/*---------INNER JOIN WYKORZYSTANY PRZY TWORZENIU WIDOKÓW---------*/
+
+-- Selekt wypisujący listę klientów którzy nie skorzystali z żadnej usługi
+SELECT ku.id, imie, nazwisko FROM klient
+left join klient_usługa ku on klient.id = ku.id_klient
+where ku.id is null;
+
+-- Selekt wypisujący listę wynajmów które nie zostały jeszcze realizowane przez klientów
+SELECT w.id from usługa
+right join wynajem w on usługa.id_wynajem = w.id
+WHERE usługa.id IS NULL;
+
+-- Full Outer Join
+select * from pracownik
+left join usługa
+on pracownik.id = usługa.id_pracownik_odbiór
+union
+select * from pracownik
+right JOIN usługa on pracownik.id = usługa.id_pracownik_dostawa;
+
+
+/*---------AKTUALIZACJA DANYCH---------*/
+
+-- Zmiana nazwisk klientów z id 15-20 na "Kowalski"
+UPDATE klient
+SET nazwisko = 'Kowalski'
+WHERE id BETWEEN 15 AND 20;
+
+-- Podniesienie wszystkich cen wynajmu o 10%
+UPDATE wynajem
+SET cena_24h = cena_24h+(cena_24h*0.1);
+
+-- Podwyżka 200 dla pracowników oddziału nr.2
+UPDATE pracownik
+SET pensja = pensja + 200
+WHERE id_oddział = '2';
+
+-- Przedłużenie usługi wynajmu o indexie 8 o jeden dzień
+UPDATE klient_usługa
+SET data_koniec = data_koniec + day('0000-00-01')
+WHERE id = 8;
+
+/*---------WYKORZYSTANIE FUNKCJI---------*/
+
+DELIMITER $$
+CREATE PROCEDURE DaneKlientów()
+BEGIN
+    SELECT *
+    FROM klient;
+end $$
+DELIMITER ;
+-- Wywołanie
+CALL DaneKlientów();
+
+DELIMITER $$
+CREATE PROCEDURE PensjaPracownika(IN peselPracownika VARCHAR(11))
+BEGIN
+    SELECT pensja
+    FROM pracownik
+    WHERE pracownik.pesel = peselPracownika;
+end $$
+DELIMITER ;
+-- Wywołanie
+CALL PensjaPracownika(95840588113);
+
+DELIMITER $$
+CREATE PROCEDURE AvgCenaWynajmu()
+BEGIN
+    SELECT AVG(cena_24h)
+    FROM wynajem;
+end $$
+DELIMITER ;
+-- Wywołanie
+CALL AvgCenaWynajmu();
+
+/*---------WYKORZYSTANIE FILTRÓW---------*/
+
+-- wypisanie id i imion klientów na A
+select id, imie FROM klient
+WHERE imie LIKE 'A%';
+
+-- wypisanie id i imion klientów zawierających A
+select id, imie FROM klient
+WHERE imie LIKE '%A%';
+
+-- wypisanie nazwisk klientów zaczynających się na k i kończących na i
+select id, nazwisko FROM klient
+WHERE nazwisko LIKE 'k%i';
+
+-- wypisanie nazwisk prawcowników o indeksie 3-7
+SELECT id, nazwisko FROM pracownik
+WHERE id BETWEEN 3 AND 7;
+
+/*---------WYKORZYSTANIE FUNKCJI SORTOWANIA I GRUPOWANIA---------*/
+
+-- Selekt grupujący liczbę sprawnych i niesprawnych samochodów
+SELECT COUNT(id) as 'liczba_samochodów', sprawny
+FROM samochód
+group by sprawny
+order by sprawny desc;
+
+-- Selekt sortujący imiona klientów alfabetycznie
+SELECT imie FROM klient
+order by imie;
+
+/*---------USUWANIE DANYCH---------*/
+
+-- Usunięcie wszystkich nie użytych do tej pory adresów
+DELETE A from adres A
+left join klient k on A.id = k.id_adres
+left join pracownik p on A.id = p.id_adres
+left join usługa u on A.id = u.id_adres_dostawa and A.id = u.id_adres_obiór
+WHERE k.id_adres IS NULL AND p.id_adres IS NULL AND u.id_adres_obiór IS NULL AND u.id_adres_dostawa IS NULL;
+
+/*___________________________________________________________________________________________________________________________
+
+							CZYSZCZENIE BAZY DANYCH
+___________________________________________________________________________________________________________________________*/
+
+/*---------CZYSZCZENIE PROCEDUR---------*/
+DROP PROCEDURE AvgCenaWynajmu;
+DROP PROCEDURE DaneKlientów;
+DROP PROCEDURE PensjaPracownika;
+
+/*---------CZYSZCZENIE INDEXÓW---------*/
+ALTER TABLE klient DROP INDEX klient_imie_idx;
+ALTER TABLE pracownik DROP INDEX pracownik_imie_idx;
+ALTER TABLE model DROP INDEX model_marka_idx;
+ALTER TABLE oddział DROP INDEX oddział_miasto_idx;
+ALTER TABLE samochód DROP INDEX samochód_rejestracja_idx;
+ALTER TABLE adres DROP INDEX adres_miasto_idx;
+
+/*---------CZYSZCZENIE FOREIGN KEY---------*/
+ALTER TABLE pracownik DROP FOREIGN KEY id_pracownik_oddział_fk;
+ALTER TABLE pracownik DROP FOREIGN KEY id_pracownik_adres_fk;
+ALTER TABLE samochód DROP FOREIGN KEY id_samochód_oddział_fk;
+ALTER TABLE klient DROP FOREIGN KEY id_klient_adres_fk;
+ALTER TABLE samochód_model DROP FOREIGN KEY id_samochód_model_samochód_fk;
+ALTER TABLE samochód_model DROP FOREIGN KEY id_samochód_model_model_fk;
+ALTER TABLE wynajem DROP FOREIGN KEY id_wynajem_samochód_model_fk;
+ALTER TABLE usługa DROP FOREIGN KEY id_usługa_pracownik_dostawa_fk;
+ALTER TABLE usługa DROP FOREIGN KEY id_usługa_pracownik_odbiór_fk;
+ALTER TABLE usługa DROP FOREIGN KEY id_usługa_adres_dostawa_fk;
+ALTER TABLE usługa DROP FOREIGN KEY id_usługa_adres_obiór_fk;
+ALTER TABLE usługa DROP FOREIGN KEY id_usługa_wynajem_fk;
+ALTER TABLE klient_usługa DROP FOREIGN KEY id_klient_usługa_klient_fk;
+ALTER TABLE klient_usługa DROP FOREIGN KEY id_klient_usługa_usługa_fk;
+
+/*---------CZYSZCZENIE WIDOKÓW---------*/
+DROP VIEW dane_klient;
+DROP VIEW dane_pracownik;
+DROP VIEW dane_wynajmu;
+DROP VIEW samochody_niesprawne;
+DROP VIEW samochody_sprawne;
+
+/*---------CZYSZCZENIE TABEL Z DANYCH---------*/
+TRUNCATE TABLE klient_usługa;
+TRUNCATE TABLE usługa;
+TRUNCATE TABLE wynajem;
+TRUNCATE TABLE samochód_model;
+TRUNCATE TABLE model;
+TRUNCATE TABLE samochód;
+TRUNCATE TABLE klient;
+TRUNCATE TABLE pracownik;
+TRUNCATE TABLE oddział;
+TRUNCATE TABLE adres;
+
+/*---------CZYSZCZENIE TABEL---------*/
+drop table klient_usługa;
+drop table usługa;
+drop table wynajem;
+drop table samochód_model;
+drop table model;
+drop table samochód;
+drop table klient;
+drop table pracownik;
+drop table oddział;
+drop table adres;
+
+
+
+/*---------CZYSZCZENIE BAZY DANYCH---------*/
+DROP DATABASE wypożyczalnia;
