@@ -27,8 +27,8 @@ CREATE TABLE pracownik
     nazwisko          VARCHAR(50)   NOT NULL,
     id_oddział        INT           NOT NULL,
     id_adres          INT           NOT NULL,
-    pesel             long          NOT NULL,
-    nr_tel            long          NOT NULL,
+    pesel             bigint UNIQUE          NOT NULL,
+    nr_tel            bigint          NOT NULL,
     data_zatrudnienie DATE          NOT NULL,
     pensja            DECIMAL(6, 2) NOT NULL
 );
@@ -56,8 +56,8 @@ CREATE TABLE klient
     PRIMARY KEY (id),
     imie     varchar(50) NOT NULL,
     nazwisko varchar(50) NOT NULL,
-    pesel    long        NOT NULL,
-    nr_tel   long        NOT NULL,
+    pesel    bigint UNIQUE        NOT NULL,
+    nr_tel   bigint        NOT NULL,
     id_adres INT         NOT NULL
 );
 CREATE TABLE samochód_model
